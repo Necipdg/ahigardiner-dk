@@ -66,7 +66,7 @@ p{margin:0 0 1.1em}
 .burger[aria-expanded="true"] span:nth-child(1){transform:translateY(7px) rotate(45deg)}
 .burger[aria-expanded="true"] span:nth-child(2){opacity:0}
 .burger[aria-expanded="true"] span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
-.nav-scrim{position:fixed;inset:0;background:rgba(20,17,14,.45);opacity:0;visibility:hidden;transition:.25s;z-index:55}
+.nav-scrim{position:fixed;inset:0;background:rgba(20,17,14,.45);opacity:0;visibility:hidden;transition:opacity .25s,visibility .25s;z-index:45}
 .nav-scrim.is-open{opacity:1;visibility:visible}
 
 /* hero */
@@ -204,7 +204,7 @@ textarea{min-height:130px;resize:vertical}
 .lb button{position:absolute;top:18px;right:22px;background:none;border:0;color:#fff;font-size:2rem;cursor:pointer;line-height:1}
 
 @media(max-width:1120px){
-  .burger{display:block}
+  .burger{display:block;position:relative;z-index:70}
   .nav{position:fixed;inset:0 0 0 auto;width:min(86vw,340px);background:#fff;flex-direction:column;align-items:flex-start;gap:0;padding:84px 26px 32px;transform:translateX(100%);transition:transform .28s;box-shadow:-10px 0 40px rgba(0,0,0,.16);overflow-y:auto;z-index:60}
   .nav.is-open{transform:none}
   .nav a{padding:14px 0;width:100%;border-bottom:1px solid var(--line)}
