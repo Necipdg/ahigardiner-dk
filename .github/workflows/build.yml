@@ -3,7 +3,7 @@ name: build
 on:
   push:
     paths:
-      - 'build.py.gz.b64'
+      - 'b64/**'
       - 'assets/**'
       - '.github/workflows/build.yml'
   workflow_dispatch:
@@ -19,6 +19,7 @@ jobs:
 
       - name: Udpak byggescript
         run: |
+          cat b64/part1.txt b64/part2.txt b64/part3.txt b64/part4.txt b64/part5.txt b64/part6.txt > build.py.gz.b64
           base64 -d build.py.gz.b64 | gunzip > build.py
           echo "2e89ec92c0e22e37001f243ceb9114b9fa3e689ffb799c8d8e7763f73c1e531f  build.py" | sha256sum -c -
 
