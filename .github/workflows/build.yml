@@ -1,0 +1,37 @@
+name: build
+
+on:
+  push:
+    paths:
+      - 'build.py'
+      - 'assets/**'
+      - '.github/workflows/build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Byg sitet
+        run: python3 build.py
+      - name: Kopier assets ind
+        run: |
+          mkdir -p site/assets/css site/assets/js
+          cp assets/css/style.css site/assets/css/style.css
+          cp assets/js/main.js site/assets/js/main.js
+      - name: Pak deploy.zip
+        run: |
+          rm -f deploy.zip
+          cd site && zip -rq9 ../deploy.zip .
+      - name: Commit deploy.zip
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f deploy.zip
+          git diff --cached --quiet && echo "ingen aendring" && exit 0
+          git commit -m "build: deploy.zip [skip ci]"
+          git push
