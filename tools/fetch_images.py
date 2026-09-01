@@ -34,7 +34,7 @@ with open(MANIFEST, encoding='utf-8') as fh:
 
 # statiske brandbilleder (logo, favicon) kopieres med fra repoet.
 # Binaere filer ligger som <navn>.b64 (base64-tekst) og afkodes her.
-import shutil, base64
+import shutil, base64, hashlib
 _static = os.path.join(ROOT, 'assets', 'img')
 if os.path.isdir(_static):
     for b, _d, fs in os.walk(_static):
@@ -44,8 +44,19 @@ if os.path.isdir(_static):
             if fn.endswith('.b64'):
                 d_ = os.path.join(SITE, 'assets', 'img', rel_[:-4])
                 os.makedirs(os.path.dirname(d_), exist_ok=True)
+                want, data = None, []
                 with open(s_, encoding='ascii') as fb:
-                    raw = base64.b64decode(''.join(fb.read().split()))
+                    for ln in fb:
+                        ln = ln.strip()
+                        if ln.startswith('# sha256'):
+                            want = ln.split()[-1]
+                        elif ln:
+                            data.append(ln)
+                raw = base64.b64decode(''.join(data))
+                got = hashlib.sha256(raw).hexdigest()
+                if want and got != want:
+                    print('  FEJL %s: sha256 %s != forventet %s' % (rel_, got, want))
+                    sys.exit(1)
                 with open(d_, 'wb') as fo:
                     fo.write(raw)
                 print('  afkodet  %-40s %d KB' % (os.path.relpath(d_, SITE), len(raw) // 1024))
