@@ -32,6 +32,29 @@ with open(MANIFEST, encoding='utf-8') as fh:
         maxw = int(parts[2]) if len(parts) > 2 and parts[2].strip() else 900
         rows.append((rel, url, maxw))
 
+# statiske brandbilleder (logo, favicon) kopieres med fra repoet.
+# Binaere filer ligger som <navn>.b64 (base64-tekst) og afkodes her.
+import shutil, base64
+_static = os.path.join(ROOT, 'assets', 'img')
+if os.path.isdir(_static):
+    for b, _d, fs in os.walk(_static):
+        for fn in fs:
+            s_ = os.path.join(b, fn)
+            rel_ = os.path.relpath(s_, _static)
+            if fn.endswith('.b64'):
+                d_ = os.path.join(SITE, 'assets', 'img', rel_[:-4])
+                os.makedirs(os.path.dirname(d_), exist_ok=True)
+                with open(s_, encoding='ascii') as fb:
+                    raw = base64.b64decode(''.join(fb.read().split()))
+                with open(d_, 'wb') as fo:
+                    fo.write(raw)
+                print('  afkodet  %-40s %d KB' % (os.path.relpath(d_, SITE), len(raw) // 1024))
+            else:
+                d_ = os.path.join(SITE, 'assets', 'img', rel_)
+                os.makedirs(os.path.dirname(d_), exist_ok=True)
+                shutil.copy2(s_, d_)
+                print('  kopieret', os.path.relpath(d_, SITE))
+
 print('billeder i manifest:', len(rows))
 fejl = 0
 for rel, url, maxw in rows:
