@@ -145,3 +145,42 @@ print('dimensioner rettet: %d img-tags paa %d sider' % (rettet, sider))
 for k, v in sorted(_dims.items()):
     if v is None:
         print('  ADVARSEL manglende billedfil:', k)
+
+# --- cache-busting: ?v=<hash> paa alle lokale assets -------------------------
+# Uden dette beholder tidligere besoegende gamle CSS/JS/billeder i op til 30 dage
+# (Expires-headeren i .htaccess), selv efter et deploy.
+_hash = {}
+for base, _d, files in os.walk(os.path.join(SITE, 'assets')):
+    for fn in files:
+        fp = os.path.join(base, fn)
+        rel = os.path.relpath(fp, SITE).replace(os.sep, '/')
+        with open(fp, 'rb') as fh2:
+            _hash[rel] = hashlib.sha1(fh2.read()).hexdigest()[:8]
+
+_ASSET = re.compile(r'(src|href)="((?:\.\./)*assets/[^"?]+)"')
+bust = bsider = 0
+for base, _d, files in os.walk(SITE):
+    for fn in files:
+        if not fn.endswith('.html'):
+            continue
+        p = os.path.join(base, fn)
+        pd = os.path.relpath(base, SITE)
+        pd = '' if pd == '.' else pd
+        s = open(p, encoding='utf-8').read()
+
+        def _bust(m, pd=pd):
+            global bust
+            attr, href = m.group(1), m.group(2)
+            key = os.path.normpath(os.path.join(pd, href)).replace(os.sep, '/')
+            v = _hash.get(key)
+            if not v:
+                return m.group(0)
+            bust += 1
+            return '%s="%s?v=%s"' % (attr, href, v)
+
+        ny = _ASSET.sub(_bust, s)
+        ny = ny.replace('<img src="" ', '<img ')
+        if ny != s:
+            open(p, 'w', encoding='utf-8').write(ny)
+            bsider += 1
+print('cache-busting: %d asset-referencer paa %d sider' % (bust, bsider))
