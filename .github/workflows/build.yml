@@ -5,6 +5,8 @@ on:
     paths:
       - 'b64/**'
       - 'assets/**'
+      - 'upscaled.tsv'
+      - 'tools/**'
       - '.github/workflows/build.yml'
   workflow_dispatch:
 
@@ -32,11 +34,16 @@ jobs:
           cp assets/css/style.css site/assets/css/style.css
           cp assets/js/main.js site/assets/js/main.js
 
+      - name: Hent opskalerede billeder
+        run: |
+          python3 -m pip install --quiet --upgrade pillow
+          python3 tools/fetch_images.py
+
       - name: Pak deploy.zip
         run: |
           rm -f deploy.zip
           cd site && zip -rq9 ../deploy.zip .
-          cd .. && unzip -l deploy.zip | tail -3
+          cd .. && ls -lh deploy.zip && unzip -l deploy.zip | tail -3
 
       - name: Commit deploy.zip
         run: |
